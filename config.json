@@ -1,0 +1,76 @@
+{
+  "defaultLocale": "en",
+  "allowLanguageToggle": true,
+  "spinDurationMs": 4200,
+  "autoRedirectSeconds": 0,
+
+  "theme": {
+    "mode": "dark",
+    "background": "radial-gradient(120% 90% at 50% 0%, #1b2148 0%, #0d1130 45%, #070918 100%)",
+    "palette": [
+      "#e63946",
+      "#f4a261",
+      "#2a9d8f",
+      "#457b9d",
+      "#8e6bd6",
+      "#e76f8a",
+      "#43aa8b",
+      "#f9c74f",
+      "#577590",
+      "#bc6c25"
+    ]
+  },
+
+  "text": {
+    "title": { "zh-Hant": "幸運抽獎", "en": "Lucky Draw" },
+    "subtitle": { "zh-Hant": "點一下轉盤，睇下抽到咩", "en": "Tap the wheel and see what you get" },
+    "spin": { "zh-Hant": "開始抽獎", "en": "Spin the wheel" },
+    "spinning": { "zh-Hant": "抽獎中…", "en": "Spinning…" },
+    "resultTitle": { "zh-Hant": "恭喜，你抽到", "en": "You got" },
+    "open": { "zh-Hant": "前往連結", "en": "Open link" },
+    "again": { "zh-Hant": "再抽一次", "en": "Spin again" },
+    "close": { "zh-Hant": "關閉", "en": "Close" },
+    "optionsHeading": { "zh-Hant": "獎項", "en": "Prizes" },
+    "footer": { "zh-Hant": "結果以隨機方式抽出", "en": "Results are drawn at random" },
+    "empty": { "zh-Hant": "抽獎選項尚未設定。", "en": "No draw options configured yet." },
+    "loadError": {
+      "zh-Hant": "無法載入 config.json，請以 http(s) 開啟此頁面。",
+      "en": "Could not load config.json. Please open this page over http(s)."
+    },
+    "redirecting": { "zh-Hant": "{seconds} 秒後自動前往…", "en": "Redirecting in {seconds}s…" }
+  },
+
+  "options": [
+    {
+      "title": { "zh-Hant": "免費咖啡一杯", "en": "Free coffee" },
+      "url": "https://example.com/prizes/free-coffee",
+      "weight": 1
+    },
+    {
+      "title": { "zh-Hant": "全單九折", "en": "10% off your bill" },
+      "url": "https://example.com/prizes/ten-percent-off"
+    },
+    {
+      "title": { "zh-Hant": "甜點一份", "en": "Free dessert" }
+    },
+    {
+      "title": { "zh-Hant": "再抽一次", "en": "Try again" }
+    },
+    {
+      "title": { "zh-Hant": "購物金 $50", "en": "HK$50 store credit" },
+      "url": "https://example.com/prizes/store-credit",
+      "weight": 0.5
+    },
+    {
+      "title": { "zh-Hant": "神秘小禮物", "en": "Mystery gift" },
+      "url": "https://example.com/prizes/mystery-gift"
+    },
+    {
+      "title": { "zh-Hant": "多謝參與", "en": "Better luck next time" }
+    },
+    {
+      "title": { "zh-Hant": "雙倍積分", "en": "Double points" },
+      "url": "https://example.com/prizes/double-points"
+    }
+  ]
+}

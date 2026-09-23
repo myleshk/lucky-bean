@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" data-locale="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0d1130">
+<meta name="description" content="A mobile-first lucky draw wheel driven by a JSON config file.">
+<title>Lucky Draw</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23f9c74f'/%3E%3Cpath d='M16 16 L16 2 A14 14 0 0 1 29.7 19 Z' fill='%23e63946'/%3E%3C/svg%3E">
+</head>
+<body>
+
+<div class="app">
+  <header class="topbar">
+    <h1 class="title" id="ui-title">Lucky Draw</h1>
+    <div class="lang" id="lang-toggle" role="group" aria-label="Language"></div>
+  </header>
+
+  <p class="subtitle" id="ui-subtitle"></p>
+
+  <main class="stage">
+    <div class="wheel-wrap" id="wheel-wrap">
+      <canvas id="wheel" role="img" aria-label="Lucky draw wheel"></canvas>
+      <p class="sr-only" id="wheel-desc"></p>
+    </div>
+    <button type="button" class="spin-btn" id="spin-btn">Spin</button>
+  </main>
+
+  <section class="options" id="options-panel" hidden>
+    <h2 class="options-heading" id="options-heading"></h2>
+    <ul class="options-list" id="options-list"></ul>
+  </section>
+
+  <footer class="footer">
+    <span id="ui-footer"></span>
+  </footer>
+</div>
+
+<div class="sheet-backdrop" id="sheet-backdrop" hidden></div>
+<section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" hidden>
+  <h2 class="sheet-label" id="sheet-title"></h2>
+  <p class="sheet-winner" id="sheet-winner"></p>
+  <p class="sheet-redirect" id="sheet-redirect" hidden></p>
+  <div class="sheet-actions">
+    <a class="btn btn-primary" id="sheet-open" href="#" target="_blank" rel="noopener noreferrer" hidden></a>
+    <button type="button" class="btn btn-ghost" id="sheet-again"></button>
+  </div>
+  <button type="button" class="sheet-close" id="sheet-close" aria-label="Close"></button>
+</section>
+
+<p class="notice" id="notice" role="alert" hidden></p>
+
+<script src="app.js" defer></script>
+</body>
+</html>

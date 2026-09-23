@@ -1,0 +1,9 @@
+# macOS
+.DS_Store
+
+# WorkBuddy project data (not part of the published site)
+.workbuddy/
+
+# Tooling leftovers
+node_modules/
+.playwright-cli/

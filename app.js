@@ -61,6 +61,10 @@
     config: {},
     options: [],
     palette: DEFAULT_PALETTE,
+    weights: [],
+    totalWeight: 0,
+    angles: [],
+    drawn: [],
     locale: 'en',
     size: 0,
     rotation: 0,
@@ -170,7 +174,8 @@
   }
 
   function renderOptions() {
-    const labels = state.options.map(labelFor);
+    // Only options that actually have a wedge are listed.
+    const labels = state.drawn.map((index) => labelFor(state.options[index]));
     el.optionsPanel.hidden = labels.length === 0;
     el.optionsHeading.textContent = t('optionsHeading');
     el.optionsList.innerHTML = '';
@@ -181,6 +186,41 @@
     });
     el.wheelDesc.textContent = labels.join(', ');
     el.canvas.setAttribute('aria-label', `${t('title')}: ${labels.join(', ')}`);
+  }
+
+  /* ---------------- weight -> wedge geometry ----------------
+     One source of truth for the weights: the arc a wedge occupies AND the
+     probability of landing on it are both derived from state.weights, so the
+     picture can never disagree with the draw. */
+
+  function optionWeight(option) {
+    const raw = Number(option && option.weight);
+    if (Number.isFinite(raw) && raw > 0) return raw; // as configured
+    if (raw === 0) return 0;                         // explicit 0 -> no wedge, never drawn
+    return 1;                                        // missing or invalid -> default
+  }
+
+  function computeAngles() {
+    let weights = state.options.map(optionWeight);
+    let total = weights.reduce((sum, weight) => sum + weight, 0);
+    if (total <= 0) {
+      // Every option zeroed out: fall back to equal wedges rather than an empty wheel.
+      weights = state.options.map(() => 1);
+      total = weights.length;
+    }
+
+    let cursor = 0;
+    state.angles = weights.map((weight) => {
+      const span = (weight / total) * TAU;
+      const angle = { start: cursor, span };
+      cursor += span;
+      return angle;
+    });
+    state.weights = weights;
+    state.totalWeight = total;
+    state.drawn = state.options
+      .map((option, index) => index)
+      .filter((index) => weights[index] > 0);
   }
 
   /* ---------------- canvas ---------------- */
@@ -196,12 +236,14 @@
     draw();
   }
 
-  function colorFor(index) {
+  /* Colour by position on the wheel (not by option index), so two neighbouring
+     wedges can never end up the same colour once weights change the order. */
+  function colorForSlot(slot) {
     const palette = state.palette.length ? state.palette : DEFAULT_PALETTE;
-    const color = palette[index % palette.length];
-    // Keep the last wedge visually distinct from the first one.
-    if (index === state.options.length - 1 && color === palette[0] && state.options.length > 1) {
-      return palette[1 % palette.length];
+    const total = state.drawn.length;
+    let color = palette[slot % palette.length];
+    if (total > 1 && slot === total - 1 && color === palette[0]) {
+      color = palette[1 % palette.length];
     }
     return color;
   }
@@ -228,13 +270,15 @@
   function draw() {
     const size = state.size || 320;
     const c = size / 2;
-    const n = state.options.length;
+    const drawn = state.drawn;
     ctx.clearRect(0, 0, size, size);
 
-    const R = c - Math.max(8, size * 0.03);
+    // Leave room above the wheel for the pointer.
+    const R = c - Math.max(10, size * 0.06);
     const outer = Math.max(6, size * 0.026);
+    const hubR = Math.max(15, R * 0.17);
 
-    if (!n) {
+    if (!drawn.length) {
       ctx.save();
       ctx.beginPath();
       ctx.arc(c, c, R - outer, 0, TAU);
@@ -247,30 +291,26 @@
       return;
     }
 
-    const seg = TAU / n;
-    const baseFont = Math.max(9, Math.min(size * 0.048, (seg * R) * 0.6, 19));
-    const hubR = Math.max(15, R * 0.17);
-
-    for (let i = 0; i < n; i += 1) {
-      const start = -Math.PI / 2 + state.rotation + i * seg;
+    drawn.forEach((index, slot) => {
+      const { start: offset, span } = state.angles[index];
+      const start = -Math.PI / 2 + state.rotation + offset;
       ctx.beginPath();
       ctx.moveTo(c, c);
-      ctx.arc(c, c, R - outer, start, start + seg);
+      ctx.arc(c, c, R - outer, start, start + span);
       ctx.closePath();
-      ctx.fillStyle = colorFor(i);
+      ctx.fillStyle = colorForSlot(slot);
       ctx.fill();
       ctx.lineWidth = 1;
       ctx.strokeStyle = 'rgba(255,255,255,0.22)';
       ctx.stroke();
 
-      if (i === state.winner && !state.spinning) {
+      if (index === state.winner && !state.spinning) {
+        // Ring + glow only: the winning wedge keeps its exact fill colour.
         ctx.save();
         ctx.beginPath();
         ctx.moveTo(c, c);
-        ctx.arc(c, c, R - outer, start, start + seg);
+        ctx.arc(c, c, R - outer, start, start + span);
         ctx.closePath();
-        ctx.fillStyle = 'rgba(255,255,255,0.22)';
-        ctx.fill();
         ctx.lineWidth = Math.max(3, size * 0.013);
         ctx.strokeStyle = 'rgba(255,255,255,0.98)';
         ctx.shadowColor = 'rgba(255,255,255,0.9)';
@@ -278,41 +318,46 @@
         ctx.stroke();
         ctx.restore();
       }
-    }
+    });
 
-    // labels
+    // labels, sized to the wedge they sit in
     const textOuter = R - outer - Math.max(8, size * 0.035);
     const textInner = Math.max(hubR + size * 0.022, R * 0.24);
     const maxWidth = textOuter - textInner;
 
-    ctx.save();
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = 'rgba(255,255,255,0.97)';
-    ctx.shadowColor = 'rgba(0,0,0,0.4)';
-    ctx.shadowBlur = 4;
-    ctx.font = `600 ${baseFont}px ${FONT}`;
-
-    for (let i = 0; i < n; i += 1) {
-      const label = labelFor(state.options[i]);
-      if (!label || maxWidth < 18) continue;
-      const mid = -Math.PI / 2 + state.rotation + (i + 0.5) * seg;
-      fitFont(label, maxWidth, baseFont, Math.max(9, baseFont * 0.74));
-      const text = fit(label, maxWidth);
+    if (maxWidth >= 18) {
       ctx.save();
-      ctx.translate(c, c);
-      ctx.rotate(mid);
-      if (Math.cos(mid) < 0) {
-        // Left half: flip so the text is never upside down.
-        ctx.rotate(Math.PI);
-        ctx.textAlign = 'left';
-        ctx.fillText(text, -textOuter, 0);
-      } else {
-        ctx.textAlign = 'right';
-        ctx.fillText(text, textOuter, 0);
-      }
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = 'rgba(255,255,255,0.97)';
+      ctx.shadowColor = 'rgba(0,0,0,0.4)';
+      ctx.shadowBlur = 4;
+
+      drawn.forEach((index) => {
+        const { start: offset, span } = state.angles[index];
+        // Too narrow to read at the mid radius: leave it clean rather than overlap.
+        if (span * R < 13) return;
+        const label = labelFor(state.options[index]);
+        if (!label) return;
+        const baseFont = Math.max(9, Math.min(size * 0.048, span * R * 0.6, 19));
+        const mid = -Math.PI / 2 + state.rotation + offset + span / 2;
+        fitFont(label, maxWidth, baseFont, Math.max(9, baseFont * 0.74));
+        const text = fit(label, maxWidth);
+        ctx.save();
+        ctx.translate(c, c);
+        ctx.rotate(mid);
+        if (Math.cos(mid) < 0) {
+          // Left half: flip so the text is never upside down.
+          ctx.rotate(Math.PI);
+          ctx.textAlign = 'left';
+          ctx.fillText(text, -textOuter, 0);
+        } else {
+          ctx.textAlign = 'right';
+          ctx.fillText(text, textOuter, 0);
+        }
+        ctx.restore();
+      });
       ctx.restore();
     }
-    ctx.restore();
 
     // rim
     ctx.beginPath();
@@ -341,14 +386,16 @@
     ctx.fillText('★', c, c + hubR * 0.04);
     ctx.restore();
 
-    // pointer
-    const pw = Math.max(11, size * 0.05);
-    const apex = Math.max(10, size * 0.028) + pw * 1.5;
+    // pointer: overlaps the rim only. Its tip stops at 0.93R so it never covers
+    // a label, and it stays clear of the wedge band the labels sit in.
+    const pw = Math.max(9, size * 0.035);
+    const tipY = c - R * 0.93;
+    const baseY = 2;
     ctx.save();
     ctx.beginPath();
-    ctx.moveTo(c, apex);
-    ctx.lineTo(c - pw, apex - pw * 1.5 - 4);
-    ctx.lineTo(c + pw, apex - pw * 1.5 - 4);
+    ctx.moveTo(c, tipY);
+    ctx.lineTo(c - pw, baseY);
+    ctx.lineTo(c + pw, baseY);
     ctx.closePath();
     ctx.fillStyle = '#f9c74f';
     ctx.shadowColor = 'rgba(0,0,0,0.45)';
@@ -372,20 +419,17 @@
     return Math.random();
   }
 
+  /* The wheel is a physical model of the weights: one uniform sample over the
+     total weight is the same as throwing a dart at the wheel and taking whatever
+     wedge it lands in, so the odds and the picture agree by construction. */
   function pickWinner() {
-    let total = 0;
-    const weights = state.options.map((option) => {
-      const weight = Number(option && option.weight);
-      const value = Number.isFinite(weight) && weight > 0 ? weight : 1;
-      total += value;
-      return value;
-    });
-    let roll = random() * total;
-    for (let i = 0; i < weights.length; i += 1) {
-      roll -= weights[i];
+    let roll = random() * state.totalWeight;
+    for (let i = 0; i < state.weights.length; i += 1) {
+      if (state.weights[i] <= 0) continue;
+      roll -= state.weights[i];
       if (roll < 0) return i;
     }
-    return weights.length - 1;
+    return state.drawn[state.drawn.length - 1];
   }
 
   const reduceMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -393,7 +437,7 @@
   const buzz = (ms) => { if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (err) { /* ignore */ } } };
 
   function spin() {
-    if (state.spinning || !state.options.length) return;
+    if (state.spinning || !state.drawn.length) return;
 
     state.spinning = true;
     state.winner = -1;
@@ -401,12 +445,12 @@
     el.spinBtn.disabled = true;
     el.spinBtn.textContent = t('spinning');
 
-    const n = state.options.length;
-    const seg = TAU / n;
     const index = pickWinner();
-    const jitter = (random() - 0.5) * seg * 0.62;
+    const wedge = state.angles[index];
+    const jitter = (random() - 0.5) * wedge.span * 0.62;
     const turns = reduceMotion() ? 1 : 5 + Math.floor(random() * 2);
-    const target = -(index + 0.5) * seg + jitter;
+    // Centre of the winning wedge (in wheel-local coordinates) -> pointer at top.
+    const target = -(wedge.start + wedge.span / 2) + jitter;
     const start = state.rotation;
     const end = start + turns * TAU + mod(target - start, TAU);
     const duration = reduceMotion() ? 500 : Math.max(900, Number(state.config.spinDurationMs) || 4200);
@@ -616,6 +660,7 @@
     }
 
     state.options = state.config.options;
+    computeAngles();
     applyTheme();
     if (window.matchMedia) {
       window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', () => {
@@ -624,7 +669,7 @@
     }
     applyLocale(detectLocale(), false);
     resize();
-    el.spinBtn.disabled = state.options.length === 0;
+    el.spinBtn.disabled = state.drawn.length === 0;
 
     if (state.loadFailed) showNotice(t('loadError'));
   }

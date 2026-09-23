@@ -42,17 +42,17 @@
 
   "options": [
     {
-      "title": { "zh-Hant": "瑞幸咖啡", "en": "Luckin coffee☕️" },
-      "url": "https://in.lkcoffee.com/app/menu?businessRegion=HK",
-      "weight": 1
+      "title": { "zh-Hant": "霸王茶姬", "en": "Chagee🧋" },
+      "weight": 50
     },
     {
-      "title": { "zh-Hant": "霸王茶姬", "en": "Chagee🧋" },
-      "weight": 1
+      "title": { "zh-Hant": "瑞幸咖啡", "en": "Luckin coffee☕️" },
+      "url": "https://in.lkcoffee.com/app/menu?businessRegion=HK",
+      "weight": 45
     },
     {
       "title": { "zh-Hant": "今次免費", "en": "Free🥳"},
-      "weight": 0.2
+      "weight": 5
     }
   ]
 }

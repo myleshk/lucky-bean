@@ -22,11 +22,11 @@
   },
 
   "text": {
-    "title": { "zh-Hant": "幸運抽獎", "en": "Lucky Draw" },
-    "subtitle": { "zh-Hant": "點一下轉盤，睇下抽到咩", "en": "Tap the wheel and see what you get" },
+    "title": { "zh-Hant": "拼豆抽獎", "en": "Lucky Bean" },
+    "subtitle": { "zh-Hant": "點一下轉盤，睇下要俾咩", "en": "Tap the wheel and see how to pay" },
     "spin": { "zh-Hant": "開始抽獎", "en": "Spin the wheel" },
     "spinning": { "zh-Hant": "抽獎中…", "en": "Spinning…" },
-    "resultTitle": { "zh-Hant": "恭喜，你抽到", "en": "You got" },
+    "resultTitle": { "zh-Hant": "你抽到", "en": "You got" },
     "open": { "zh-Hant": "前往連結", "en": "Open link" },
     "again": { "zh-Hant": "再抽一次", "en": "Spin again" },
     "close": { "zh-Hant": "關閉", "en": "Close" },
@@ -42,35 +42,17 @@
 
   "options": [
     {
-      "title": { "zh-Hant": "免費咖啡一杯", "en": "Free coffee" },
-      "url": "https://example.com/prizes/free-coffee",
+      "title": { "zh-Hant": "瑞幸咖啡", "en": "Luckin coffee☕️" },
+      "url": "https://in.lkcoffee.com/app/menu?businessRegion=HK",
       "weight": 1
     },
     {
-      "title": { "zh-Hant": "全單九折", "en": "10% off your bill" },
-      "url": "https://example.com/prizes/ten-percent-off"
+      "title": { "zh-Hant": "霸王茶姬", "en": "Chagee🧋" },
+      "weight": 1
     },
     {
-      "title": { "zh-Hant": "甜點一份", "en": "Free dessert" }
-    },
-    {
-      "title": { "zh-Hant": "再抽一次", "en": "Try again" }
-    },
-    {
-      "title": { "zh-Hant": "購物金 $50", "en": "HK$50 store credit" },
-      "url": "https://example.com/prizes/store-credit",
-      "weight": 0.5
-    },
-    {
-      "title": { "zh-Hant": "神秘小禮物", "en": "Mystery gift" },
-      "url": "https://example.com/prizes/mystery-gift"
-    },
-    {
-      "title": { "zh-Hant": "多謝參與", "en": "Better luck next time" }
-    },
-    {
-      "title": { "zh-Hant": "雙倍積分", "en": "Double points" },
-      "url": "https://example.com/prizes/double-points"
+      "title": { "zh-Hant": "今次免費", "en": "Free🥳"},
+      "weight": 0.2
     }
   ]
 }
